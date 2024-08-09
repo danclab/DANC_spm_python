@@ -1,0 +1,35 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "setuptools_scm",
+    "ByteSplitter==1.0.4"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spm"
+version = "0.0.1"
+description = "DANC version of SPM compiled as a python library"
+readme = ""
+requires-python = ">=3.6"
+dependencies = []
+authors = [
+    { name = "James Bonaiuto", email = "james.bonaiuto@isc.cnrs.fr" },
+    { name = "DANC lab", email = "danclab.info@gmail.com" }
+]
+classifiers=[
+        'Intended Audience :: Science/Research',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved',
+        'Programming Language :: Python',
+        'Topic :: Software Development',
+        'Topic :: Scientific/Engineering',
+        'Operating System :: Unix'
+]
+
+[project.urls]
+homepage = "https://github.com/danclab/DANC_spm_python"
+
+[tool.setuptools.packages.find]
+include = ["spm"]`
