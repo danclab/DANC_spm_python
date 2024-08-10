@@ -111,12 +111,13 @@ class CustomInstall(install):
             raise FileNotFoundError(f"The install script was not found in "
                                     f"{matlab_runtime_extract_dir}")
 
-        destination_dir = os.path.join(matlab_runtime_extract_dir, '../../MATLAB_Runtime')
+        destination_dir = os.path.join(package_dir, '../MATLAB_Runtime')
         subprocess.check_call([
             install_script, '-mode', 'silent', '-agreeToLicense', 'yes',
             '-destinationFolder', destination_dir
         ])
         shutil.rmtree(matlab_runtime_extract_dir)
+        os.remove(matlab_runtime_zip)
 
 
     def set_environment_variables(self):
