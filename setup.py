@@ -128,6 +128,7 @@ class CustomInstall(install):
         environment variables for the MATLAB runtime and Jupyter extensions.
         """
         matlab_runtime_path = self.get_installed_package_dir('MATLAB_Runtime')
+        print(f'MATLAB runtime path={matlab_runtime_path}')
 
         conda_env_path = os.path.dirname(os.path.dirname(sys.executable))
         activate_script_dir = os.path.join(conda_env_path, "etc", "conda", "activate.d")
