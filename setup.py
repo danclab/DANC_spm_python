@@ -32,8 +32,8 @@ class CustomInstall(install):
         This method runs the standard installation, installs additional components like
         SPM and MATLAB runtime, sets environment variables, and sets up Jupyter extensions.
         """
-        super().run()
         self.install_spm()
+        super().run()
         self.install_matlab_runtime()
         self.set_environment_variables()
 
