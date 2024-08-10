@@ -46,7 +46,7 @@ class CustomInstall(install):
         and installs it using the local setup.py script.
         """
         base_dir = os.path.abspath(os.path.dirname(__file__))
-        spm_dir = os.path.join(base_dir, 'spm')
+        spm_dir = os.path.join(base_dir, 'build/lib/spm/')
         if not os.path.exists(os.path.join(spm_dir, 'spm_standalone', 'spm_standalone.ctf')):
             os.chdir(os.path.join(spm_dir, 'spm_standalone'))
             subprocess.check_call(['bysp', 'c', 'spm_standalone.ctf'])
