@@ -67,7 +67,7 @@ class CustomInstall(install):
         save_path (str): The local path to save the downloaded file.
         """
         if not os.path.exists(save_path):
-            subprocess.check_call(['wget', '-c', url, '-O', save_path])
+            subprocess.check_call(['wget', '-q', '-c', url, '-O', save_path])
 
 
     def extract_matlab_runtime(self, zip_path, extract_to):
