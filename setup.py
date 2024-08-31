@@ -138,6 +138,7 @@ class CustomInstall(install):
 
             # Clean up
             shutil.rmtree(matlab_runtime_extract_dir)
+
         elif system == 'Darwin':
             # Unzip the dmg.zip file
             subprocess.check_call(['unzip', '-q', matlab_runtime_zip, '-d', base_dir])
@@ -153,7 +154,8 @@ class CustomInstall(install):
             if not os.path.exists(installer_pkg):
                 raise FileNotFoundError(f"The installer package was not found in {mount_point}")
 
-            subprocess.check_call(['sudo', 'installer', '-pkg', installer_pkg, '-target', '/'])
+            # Install the package non-interactively, allowing untrusted packages if necessary
+            subprocess.check_call(['sudo', 'installer', '-pkg', installer_pkg, '-target', '/', '-allowUntrusted'])
 
             # Unmount the dmg file
             subprocess.check_call(['hdiutil', 'detach', mount_point])
