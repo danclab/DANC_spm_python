@@ -240,7 +240,8 @@ class CustomInstall(install):
                     'export DYLD_LIBRARY_PATH="/Applications/MATLAB/MATLAB_Runtime/v96/runtime/maci64:'
                     '/Applications/MATLAB/MATLAB_Runtime/v96/sys/os/maci64:'
                     '/Applications/MATLAB/MATLAB_Runtime/v96/bin/maci64:'
-                    '/Applications/MATLAB/MATLAB_Runtime/v96/extern/bin/maci64:$DYLD_LIBRARY_PATH"\n'
+                    '/Applications/MATLAB/MATLAB_Runtime/v96/extern/bin/maci64:'
+                    '$DYLD_LIBRARY_PATH"\n'
                 )
 
             with open(deactivate_script_path, "w", encoding="utf-8") as out_file:
@@ -281,6 +282,9 @@ setup(
     url='https://github.com/danclab/DANC_spm_python',
     packages=find_packages(include=['spm']),
     include_package_data=True,
+    package_data={
+        'spm.spm_standalone': ['*.part', '*.ctf'],  # Include the necessary data files
+    },
     cmdclass={
         'install': CustomInstall,
     },
