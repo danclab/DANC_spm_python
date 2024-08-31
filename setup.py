@@ -140,6 +140,7 @@ class CustomInstall(install):
             shutil.rmtree(matlab_runtime_extract_dir)
 
 
+
         elif system == 'Darwin':
 
             # Unzip the dmg.zip file
@@ -161,24 +162,17 @@ class CustomInstall(install):
                 if not os.path.exists(mount_point):
                     raise RuntimeError(f"Failed to mount the dmg file at {mount_point}")
 
-                # Find and run the installer (usually a .pkg file)
+                # Find and run the installer within the .app bundle
 
-                installer_pkg = os.path.join(mount_point,
+                installer_app = os.path.join(mount_point, 'InstallForMacOSX.app/Contents/MacOS/InstallForMacOSX')
 
-                                             'InstallForMacOSX.app/Contents/Resources/MathWorks/MATLAB_Compiler_Runtime.pkg')
+                if not os.path.exists(installer_app):
+                    raise FileNotFoundError(f"The installer binary was not found at {installer_app}")
 
-                if not os.path.exists(installer_pkg):
+                # Run the installer
 
-                    # Check if the installer might be in another common location
+                subprocess.check_call(['sudo', installer_app, '-mode', 'silent', '-agreeToLicense'])
 
-                    installer_pkg = os.path.join(mount_point, 'MATLAB_Compiler_Runtime.pkg')
-
-                    if not os.path.exists(installer_pkg):
-                        raise FileNotFoundError(f"The installer package was not found in {mount_point}")
-
-                # Install the package non-interactively, allowing untrusted packages if necessary
-
-                subprocess.check_call(['sudo', 'installer', '-pkg', installer_pkg, '-target', '/', '-allowUntrusted'])
 
             finally:
 
