@@ -139,29 +139,57 @@ class CustomInstall(install):
             # Clean up
             shutil.rmtree(matlab_runtime_extract_dir)
 
+
         elif system == 'Darwin':
+
             # Unzip the dmg.zip file
+
             subprocess.check_call(['unzip', '-q', matlab_runtime_zip, '-d', base_dir])
 
             # Mount the .dmg file
+
             dmg_path = os.path.join(base_dir, 'MATLAB_Runtime_R2019a_Update_9_maci64.dmg')
+
             mount_point = '/Volumes/MATLAB_Runtime'
-            subprocess.check_call(['hdiutil', 'attach', dmg_path, '-mountpoint', mount_point])
 
-            # Find and run the installer (usually a .pkg file)
-            installer_pkg = os.path.join(mount_point,
-                                         'InstallForMacOSX.app/Contents/Resources/MathWorks/MATLAB_Compiler_Runtime.pkg')
-            if not os.path.exists(installer_pkg):
-                raise FileNotFoundError(f"The installer package was not found in {mount_point}")
+            try:
 
-            # Install the package non-interactively, allowing untrusted packages if necessary
-            subprocess.check_call(['sudo', 'installer', '-pkg', installer_pkg, '-target', '/', '-allowUntrusted'])
+                subprocess.check_call(['hdiutil', 'attach', dmg_path, '-mountpoint', mount_point])
 
-            # Unmount the dmg file
-            subprocess.check_call(['hdiutil', 'detach', mount_point])
+                # Ensure the .dmg was mounted correctly
 
-            # Clean up
-            os.remove(dmg_path)
+                if not os.path.exists(mount_point):
+                    raise RuntimeError(f"Failed to mount the dmg file at {mount_point}")
+
+                # Find and run the installer (usually a .pkg file)
+
+                installer_pkg = os.path.join(mount_point,
+
+                                             'InstallForMacOSX.app/Contents/Resources/MathWorks/MATLAB_Compiler_Runtime.pkg')
+
+                if not os.path.exists(installer_pkg):
+
+                    # Check if the installer might be in another common location
+
+                    installer_pkg = os.path.join(mount_point, 'MATLAB_Compiler_Runtime.pkg')
+
+                    if not os.path.exists(installer_pkg):
+                        raise FileNotFoundError(f"The installer package was not found in {mount_point}")
+
+                # Install the package non-interactively, allowing untrusted packages if necessary
+
+                subprocess.check_call(['sudo', 'installer', '-pkg', installer_pkg, '-target', '/', '-allowUntrusted'])
+
+            finally:
+
+                # Unmount the dmg file
+
+                subprocess.check_call(['hdiutil', 'detach', mount_point])
+
+                # Clean up
+
+                os.remove(dmg_path)
+
 
     def set_environment_variables(self):
         """
