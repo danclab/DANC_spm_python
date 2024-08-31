@@ -139,8 +139,6 @@ class CustomInstall(install):
             # Clean up
             shutil.rmtree(matlab_runtime_extract_dir)
 
-
-
         elif system == 'Darwin':
 
             # Unzip the dmg.zip file
@@ -169,9 +167,19 @@ class CustomInstall(install):
                 if not os.path.exists(installer_app):
                     raise FileNotFoundError(f"The installer binary was not found at {installer_app}")
 
-                # Run the installer
+                # Run the installer with proper options
 
-                subprocess.check_call(['sudo', installer_app, '-mode', 'silent', '-agreeToLicense'])
+                subprocess.check_call([
+
+                    'sudo', installer_app,
+
+                    '-mode', 'silent',
+
+                    '-agreeToLicense', 'yes',
+
+                    '-destinationFolder', '/Applications/MATLAB/MATLAB_Runtime/v96'
+
+                ])
 
 
             finally:
@@ -183,7 +191,6 @@ class CustomInstall(install):
                 # Clean up
 
                 os.remove(dmg_path)
-
 
     def set_environment_variables(self):
         """
