@@ -8,6 +8,7 @@ import glob
 import shutil
 import subprocess
 import sys
+import platform
 import zipfile
 from setuptools import setup, find_packages
 from setuptools.command.install import install
@@ -97,7 +98,7 @@ class CustomInstall(install):
         script in silent mode with the necessary parameters.
         """
         base_dir = os.path.abspath(os.path.dirname(__file__))
-        system = sys.platform.system()
+        system = platform.system()
 
         if system == 'Linux':
             matlab_runtime_zip = os.path.join(base_dir, 'MATLAB_Runtime_R2019a_Update_9_glnxa64.zip')
@@ -179,7 +180,7 @@ class CustomInstall(install):
         os.makedirs(deactivate_script_dir, exist_ok=True)
         deactivate_script_path = os.path.join(deactivate_script_dir, "env_vars.sh")
 
-        system = sys.platform.system()
+        system = platform.system()
 
         if system == 'Linux':
             # For Linux
