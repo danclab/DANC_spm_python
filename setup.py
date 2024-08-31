@@ -188,9 +188,6 @@ class CustomInstall(install):
 
                 subprocess.check_call(['hdiutil', 'detach', mount_point])
 
-                # Clean up
-
-                os.remove(dmg_path)
 
     def set_environment_variables(self):
         """
