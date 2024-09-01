@@ -87,6 +87,7 @@ class CustomInstall(install):
                     if file.endswith('.sh') or file == 'install' or 'bin' in root:
                         os.chmod(os.path.join(root, file), 0o755)
 
+
     def install_matlab_runtime(self):
         """
         Downloads and installs the MATLAB runtime.
@@ -140,52 +141,35 @@ class CustomInstall(install):
             shutil.rmtree(matlab_runtime_extract_dir)
 
         elif system == 'Darwin':
-
             # Unzip the dmg.zip file
-
             subprocess.check_call(['unzip', '-q', matlab_runtime_zip, '-d', base_dir])
 
             # Mount the .dmg file
-
             dmg_path = os.path.join(base_dir, 'MATLAB_Runtime_R2019a_Update_9_maci64.dmg')
-
             mount_point = '/Volumes/MATLAB_Runtime'
 
             try:
-
                 subprocess.check_call(['hdiutil', 'attach', dmg_path, '-mountpoint', mount_point])
 
                 # Ensure the .dmg was mounted correctly
-
                 if not os.path.exists(mount_point):
                     raise RuntimeError(f"Failed to mount the dmg file at {mount_point}")
 
                 # Find and run the installer within the .app bundle
-
                 installer_app = os.path.join(mount_point, 'InstallForMacOSX.app/Contents/MacOS/InstallForMacOSX')
 
                 if not os.path.exists(installer_app):
                     raise FileNotFoundError(f"The installer binary was not found at {installer_app}")
 
                 # Run the installer with proper options
-
                 subprocess.check_call([
-
                     'sudo', installer_app,
-
                     '-mode', 'silent',
-
                     '-agreeToLicense', 'yes',
-
                     '-destinationFolder', '/Applications/MATLAB/MATLAB_Runtime/v96'
-
                 ])
-
-
             finally:
-
                 # Unmount the dmg file
-
                 subprocess.check_call(['hdiutil', 'detach', mount_point])
 
 
@@ -196,9 +180,6 @@ class CustomInstall(install):
         This method creates activation and deactivation scripts in the Conda environment to manage
         environment variables for the MATLAB runtime and Jupyter extensions.
         """
-        matlab_runtime_path = self.get_installed_package_dir('MATLAB_Runtime')
-        print(f'MATLAB runtime path={matlab_runtime_path}')
-
         conda_env_path = os.path.dirname(os.path.dirname(sys.executable))
         activate_script_dir = os.path.join(conda_env_path, "etc", "conda", "activate.d")
         os.makedirs(activate_script_dir, exist_ok=True)
@@ -212,6 +193,9 @@ class CustomInstall(install):
 
         if system == 'Linux':
             # For Linux
+            matlab_runtime_path = self.get_installed_package_dir('MATLAB_Runtime')
+            print(f'MATLAB runtime path={matlab_runtime_path}')
+
             with open(activate_script_path, "w", encoding="utf-8") as out_file:
                 out_file.write(f'export MATLAB_RUNTIME_DIR="{matlab_runtime_path}"\n')
                 out_file.write('export _OLD_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"\n')
@@ -279,9 +263,6 @@ setup(
     url='https://github.com/danclab/DANC_spm_python',
     packages=find_packages(include=['spm']),
     include_package_data=True,
-    package_data={
-        'spm.spm_standalone': ['*.part', '*.ctf'],  # Include the necessary data files
-    },
     cmdclass={
         'install': CustomInstall,
     },
