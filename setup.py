@@ -172,7 +172,7 @@ class CustomInstall(install):
             finally:
                 # Unmount the dmg file
                 subprocess.check_call(['hdiutil', 'detach', mount_point])
-
+        os.remove(matlab_runtime_zip)
 
     def set_environment_variables(self):
         """
