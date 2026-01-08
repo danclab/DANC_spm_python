@@ -57,6 +57,7 @@ class CustomInstall(install):
         os.chdir(spm_dir)
         subprocess.check_call([sys.executable, "setup.py", "install"])
         os.chdir(base_dir)
+        shutil.rmtree(spm_dir)
 
 
     def download_file(self, url, save_path):
