@@ -1,8 +1,10 @@
-function convert_ctf_fif_to_spm(orig_res4_file, mne_file, output_path, prefix, epoched)
+function convert_ctf_fif_to_spm(orig_res4_file, mne_file, output_path,...
+    prefix, epoched)
 % CONVERT_MNE_TO_SPM  Convert MNE file (fif format) to SPM
 %    convert_mne_to_spm(orig_res4_file, mne_file, epoched)
 %        orig_res4_file = file path of the original data 
 %        mne_file = file path of the MNE (fif file) to convert
+%        prefix = prefix for the new SPM filename
 %        epoched = 0 if continuous data, 1 if epoched
 
 
