@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spm"
-version = "0.0.1"
+version = "0.1.0"
 description = "DANC version of SPM compiled as a python library"
 readme = ""
 requires-python = ">=3.6"
