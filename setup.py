@@ -176,59 +176,108 @@ class CustomInstall(install):
 
     def set_environment_variables(self):
         """
-        Sets environment variables for the MATLAB runtime and Jupyter extensions.
+        Create Conda activation/deactivation scripts for the MATLAB Runtime.
 
-        This method creates activation and deactivation scripts in the Conda environment to manage
-        environment variables for the MATLAB runtime and Jupyter extensions.
+        The MATLAB Runtime libraries are added only while the Conda environment
+        is active. On Linux, avoid adding v96/bin/glnxa64 to LD_LIBRARY_PATH
+        because it contains bundled system libraries (for example libldap and
+        liblber) that can interfere with unrelated programs such as git and curl.
         """
         conda_env_path = os.path.dirname(os.path.dirname(sys.executable))
-        activate_script_dir = os.path.join(conda_env_path, "etc", "conda", "activate.d")
-        os.makedirs(activate_script_dir, exist_ok=True)
-        activate_script_path = os.path.join(activate_script_dir, "env_vars.sh")
 
+        activate_script_dir = os.path.join(conda_env_path, "etc", "conda", "activate.d")
         deactivate_script_dir = os.path.join(conda_env_path, "etc", "conda", "deactivate.d")
+
+        os.makedirs(activate_script_dir, exist_ok=True)
         os.makedirs(deactivate_script_dir, exist_ok=True)
-        deactivate_script_path = os.path.join(deactivate_script_dir, "env_vars.sh")
+
+        # Use package-specific names so we do not overwrite activation scripts
+        # created by other packages.
+        activate_script_path = os.path.join(activate_script_dir, "danc_spm_runtime.sh")
+        deactivate_script_path = os.path.join(deactivate_script_dir, "danc_spm_runtime.sh")
 
         system = platform.system()
 
-        if system == 'Linux':
-            # For Linux
-            matlab_runtime_path = self.get_installed_package_dir('MATLAB_Runtime')
-            print(f'MATLAB runtime path={matlab_runtime_path}')
+        if system == "Linux":
+            matlab_runtime_path = self.get_installed_package_dir("MATLAB_Runtime")
+            print(f"MATLAB runtime path={matlab_runtime_path}")
 
             with open(activate_script_path, "w", encoding="utf-8") as out_file:
                 out_file.write(f'export MATLAB_RUNTIME_DIR="{matlab_runtime_path}"\n')
-                out_file.write('export _OLD_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"\n')
+
+                # Remember whether these variables existed before activation,
+                # as well as their values.
+                out_file.write('export _DANC_SPM_LD_LIBRARY_PATH_WAS_SET="${LD_LIBRARY_PATH+x}"\n')
+                out_file.write('export _DANC_SPM_OLD_LD_LIBRARY_PATH="${LD_LIBRARY_PATH-}"\n')
+                out_file.write('export _DANC_SPM_XAPPLRESDIR_WAS_SET="${XAPPLRESDIR+x}"\n')
+                out_file.write('export _DANC_SPM_OLD_XAPPLRESDIR="${XAPPLRESDIR-}"\n')
+
+                # Deliberately omit v96/bin/glnxa64. It contains bundled
+                # libraries such as libldap/liblber that can override system
+                # libraries used by git, curl, etc.
                 out_file.write(
-                    'export LD_LIBRARY_PATH="${MATLAB_RUNTIME_DIR}/v96/runtime/glnxa64:'
-                    '${MATLAB_RUNTIME_DIR}/v96/bin/glnxa64:'
-                    '${MATLAB_RUNTIME_DIR}/v96/sys/os/glnxa64:'
-                    '$LD_LIBRARY_PATH"\n'
+                    'export LD_LIBRARY_PATH="'
+                    '${MATLAB_RUNTIME_DIR}/v96/runtime/glnxa64:'
+                    '${MATLAB_RUNTIME_DIR}/v96/sys/os/glnxa64'
+                    '${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"\n'
                 )
-                out_file.write('export XAPPLRESDIR="${MATLAB_RUNTIME_DIR}/v96/X11/app-defaults"\n')
+
+                out_file.write(
+                    'export XAPPLRESDIR="'
+                    '${MATLAB_RUNTIME_DIR}/v96/X11/app-defaults"\n'
+                )
 
             with open(deactivate_script_path, "w", encoding="utf-8") as out_file:
                 out_file.write('unset MATLAB_RUNTIME_DIR\n')
-                out_file.write('export LD_LIBRARY_PATH="$_OLD_LD_LIBRARY_PATH"\n')
-                out_file.write('unset _OLD_LD_LIBRARY_PATH\n')
-                out_file.write('unset XAPPLRESDIR\n')
 
-        elif system == 'Darwin':  # macOS
-            # For macOS
+                out_file.write('if [ "${_DANC_SPM_LD_LIBRARY_PATH_WAS_SET}" = "x" ]; then\n')
+                out_file.write('    export LD_LIBRARY_PATH="${_DANC_SPM_OLD_LD_LIBRARY_PATH}"\n')
+                out_file.write('else\n')
+                out_file.write('    unset LD_LIBRARY_PATH\n')
+                out_file.write('fi\n')
+
+                out_file.write('if [ "${_DANC_SPM_XAPPLRESDIR_WAS_SET}" = "x" ]; then\n')
+                out_file.write('    export XAPPLRESDIR="${_DANC_SPM_OLD_XAPPLRESDIR}"\n')
+                out_file.write('else\n')
+                out_file.write('    unset XAPPLRESDIR\n')
+                out_file.write('fi\n')
+
+                out_file.write('unset _DANC_SPM_LD_LIBRARY_PATH_WAS_SET\n')
+                out_file.write('unset _DANC_SPM_OLD_LD_LIBRARY_PATH\n')
+                out_file.write('unset _DANC_SPM_XAPPLRESDIR_WAS_SET\n')
+                out_file.write('unset _DANC_SPM_OLD_XAPPLRESDIR\n')
+
+        elif system == "Darwin":
             with open(activate_script_path, "w", encoding="utf-8") as out_file:
-                out_file.write('export _OLD_DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH"\n')
                 out_file.write(
-                    'export DYLD_LIBRARY_PATH="/Applications/MATLAB/MATLAB_Runtime/v96/runtime/maci64:'
+                    'export _DANC_SPM_DYLD_LIBRARY_PATH_WAS_SET='
+                    '"${DYLD_LIBRARY_PATH+x}"\n'
+                )
+                out_file.write(
+                    'export _DANC_SPM_OLD_DYLD_LIBRARY_PATH='
+                    '"${DYLD_LIBRARY_PATH-}"\n'
+                )
+                out_file.write(
+                    'export DYLD_LIBRARY_PATH="'
+                    '/Applications/MATLAB/MATLAB_Runtime/v96/runtime/maci64:'
                     '/Applications/MATLAB/MATLAB_Runtime/v96/sys/os/maci64:'
                     '/Applications/MATLAB/MATLAB_Runtime/v96/bin/maci64:'
-                    '/Applications/MATLAB/MATLAB_Runtime/v96/extern/bin/maci64:'
-                    '$DYLD_LIBRARY_PATH"\n'
+                    '/Applications/MATLAB/MATLAB_Runtime/v96/extern/bin/maci64'
+                    '${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}"\n'
                 )
 
             with open(deactivate_script_path, "w", encoding="utf-8") as out_file:
-                out_file.write('export DYLD_LIBRARY_PATH="$_OLD_DYLD_LIBRARY_PATH"\n')
-                out_file.write('unset _OLD_DYLD_LIBRARY_PATH\n')
+                out_file.write('if [ "${_DANC_SPM_DYLD_LIBRARY_PATH_WAS_SET}" = "x" ]; then\n')
+                out_file.write(
+                    '    export DYLD_LIBRARY_PATH='
+                    '"${_DANC_SPM_OLD_DYLD_LIBRARY_PATH}"\n'
+                )
+                out_file.write('else\n')
+                out_file.write('    unset DYLD_LIBRARY_PATH\n')
+                out_file.write('fi\n')
+                out_file.write('unset _DANC_SPM_DYLD_LIBRARY_PATH_WAS_SET\n')
+                out_file.write('unset _DANC_SPM_OLD_DYLD_LIBRARY_PATH\n')
+
         else:
             raise OSError("Unsupported operating system")
 
