@@ -32,4 +32,6 @@ classifiers=[
 homepage = "https://github.com/danclab/DANC_spm_python"
 
 [tool.setuptools.packages.find]
-include = ["spm"]
+where = ["."]
+include = ["spm", "spm.*"]
+namespaces = true

@@ -10,7 +10,7 @@ import subprocess
 import sys
 import platform
 import zipfile
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 from setuptools.command.install import install
 
 class CustomInstall(install):
@@ -311,7 +311,10 @@ setup(
     author='DANC lab',
     author_email='james.bonaiuto@isc.cnrs.fr',
     url='https://github.com/danclab/DANC_spm_python',
-    packages=find_packages(include=['spm']),
+    packages=find_namespace_packages(include=['spm', 'spm.*']),
+    package_data={
+        'spm.spm_standalone': ['spm_standalone.ctf.*.part'],
+    },
     include_package_data=True,
     cmdclass={
         'install': CustomInstall,
