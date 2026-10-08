@@ -306,7 +306,7 @@ class CustomInstall(install):
 
 setup(
     name='spm',
-    version='0.1.0',
+    version='0.1.1',
     description='DANC version of SPM compiled as a python library',
     author='DANC lab',
     author_email='james.bonaiuto@isc.cnrs.fr',
