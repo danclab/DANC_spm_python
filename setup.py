@@ -10,6 +10,8 @@ import subprocess
 import sys
 import platform
 import zipfile
+import tempfile
+from urllib.request import urlopen
 from setuptools import setup, find_namespace_packages
 from setuptools.command.install import install
 
@@ -59,17 +61,35 @@ class CustomInstall(install):
         os.chdir(base_dir)
         shutil.rmtree(spm_dir)
 
-
     def download_file(self, url, save_path):
-        """
-        Downloads a file from a given URL to the specified path.
+        """Download a file using Python's standard library."""
+        if os.path.exists(save_path):
+            return
 
-        Parameters:
-        url (str): The URL to download the file from.
-        save_path (str): The local path to save the downloaded file.
-        """
-        if not os.path.exists(save_path):
-            subprocess.check_call(['curl', '-s', '-L', '-o', save_path, url])
+        temp_path = None
+
+        try:
+            with tempfile.NamedTemporaryFile(
+                    mode="wb",
+                    dir=os.path.dirname(save_path),
+                    prefix=os.path.basename(save_path) + ".",
+                    suffix=".part",
+                    delete=False,
+            ) as output:
+                temp_path = output.name
+
+                with urlopen(url, timeout=120) as response:
+                    shutil.copyfileobj(
+                        response,
+                        output,
+                        length=1024 * 1024,
+                    )
+
+            os.replace(temp_path, save_path)
+
+        finally:
+            if temp_path and os.path.exists(temp_path):
+                os.remove(temp_path)
 
 
     def extract_matlab_runtime(self, zip_path, extract_to):
@@ -306,7 +326,7 @@ class CustomInstall(install):
 
 setup(
     name='spm',
-    version='0.1.1',
+    version='0.1.2',
     description='DANC version of SPM compiled as a python library',
     author='DANC lab',
     author_email='james.bonaiuto@isc.cnrs.fr',
